@@ -1,13 +1,13 @@
 import getpass
 import hashlib
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 import string
 import random
 
 class PwMgr:
     def Encrypt(password:str) -> str :
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        salt = PwMgr.rand_lowercase_word(random.randint(1, 100))
+        salt = PwMgr.rand_salt(random.randint(1, 100))
         salted_password = hashlib.sha256((password + salt).encode()).hexdigest()
         key = Fernet.generate_key()
         print("key:\t\t\t", key.decode('utf-8'))
@@ -15,16 +15,20 @@ class PwMgr:
         encrypted_password = cipher_suite.encrypt(password.encode()).decode()
         return encrypted_password
     
-    def Decrypt(sha_password:str, key:str):
+    def Decrypt(sha_password:str, key:str) -> str:
         try:
             cipher_suite = Fernet(key)
         except ValueError:
             print(f"[ValueError] Key len != 32")
             return None
-        decrypted_password = cipher_suite.decrypt(sha_password.encode()).decode()
+        try:
+            decrypted_password = cipher_suite.decrypt(sha_password.encode()).decode()
+        except InvalidToken:
+            print("token no valid")
+            return None
         return decrypted_password
 
-    def rand_lowercase_word(word_len:int):
+    def rand_salt(word_len:int) -> str:
         lowercase_letters = string.ascii_lowercase
         word = ''
         while len(word) != word_len:

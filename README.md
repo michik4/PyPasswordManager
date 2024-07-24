@@ -1,1 +1,2 @@
-# Python password SHA256 generator
+# Python Password manager
+Generator SHA256 passwords
